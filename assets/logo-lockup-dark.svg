@@ -1,0 +1,18 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1160 320" role="img" aria-labelledby="title desc">
+  <title id="title">InputScout</title>
+  <desc id="desc">InputScout logo and wordmark for dark backgrounds.</desc>
+
+  <g transform="translate(24 24) scale(.53125)">
+    <rect x="32" y="32" width="448" height="448" rx="116" fill="#172033" stroke="#334155" stroke-width="8"/>
+    <path d="M166 182C257 182 330 255 330 346H306C306 269 243 206 166 206Z" fill="#38bdf8"/>
+    <path d="M166 246C221 246 266 291 266 346H242C242 304 208 270 166 270Z" fill="#38bdf8"/>
+    <polygon points="156.8,336.8 344.8,148.8 363.2,167.2 175.2,355.2" fill="#2dd4bf"/>
+    <circle cx="166" cy="346" r="25" fill="#2dd4bf"/>
+    <circle cx="354" cy="158" r="34" fill="#2dd4bf"/>
+    <circle cx="354" cy="158" r="20" fill="#f8fafc"/>
+  </g>
+
+  <text x="338" y="186" textLength="280" lengthAdjust="spacingAndGlyphs" fill="#f8fafc" font-family="IBM Plex Sans, Noto Sans, sans-serif" font-size="116" font-weight="700">Input</text>
+  <text x="612" y="186" textLength="300" lengthAdjust="spacingAndGlyphs" fill="#2dd4bf" font-family="IBM Plex Sans, Noto Sans, sans-serif" font-size="116" font-weight="700">Scout</text>
+  <text x="345" y="245" textLength="540" lengthAdjust="spacingAndGlyphs" fill="#94a3b8" font-family="IBM Plex Sans, Noto Sans, sans-serif" font-size="27" font-weight="600">INPUT DEVICE INTELLIGENCE</text>
+</svg>

@@ -1,3 +1,7 @@
+<p align="center">
+  <img src="assets/logo-lockup.svg" alt="InputScout" width="760">
+</p>
+
 # InputScout
 
 [![CI](https://github.com/spdg/inputscout/actions/workflows/ci.yml/badge.svg)](https://github.com/spdg/inputscout/actions/workflows/ci.yml)
@@ -9,6 +13,8 @@ reports and does not modify onboard device settings.
 The project is at an early stage. Its first goal is reliable device discovery
 and battery reporting, followed by a background service and desktop status
 indicator.
+
+[Roadmap](ROADMAP.md) · [Brand assets](assets/BRAND.md)
 
 ## Current support
 
@@ -75,3 +81,10 @@ updates are intentionally out of scope for this first version.
 InputScout is an independent community project. It is not affiliated with or
 endorsed by Keychron. Product and company names are used only to identify
 compatible hardware.
+
+## Roadmap
+
+The planned path includes a replayable driver architecture, diagnostics,
+read-only mouse configuration, safe reversible writes, K8 HE battery research,
+a D-Bus service, desktop clients, native packages, and a contributor-facing
+driver model. See the complete [project roadmap](ROADMAP.md).
