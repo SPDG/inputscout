@@ -18,21 +18,55 @@ type Battery struct {
 	Charging   bool `json:"charging"`
 }
 
-// Status describes a Keychron device attached through a supported receiver.
+// KeyboardTelemetry is read-only state reported by a directly connected
+// keyboard configuration interface.
+type KeyboardTelemetry struct {
+	FirmwareVersion string           `json:"firmware_version"`
+	FirmwareBuild   string           `json:"firmware_build,omitempty"`
+	ProtocolVersion int              `json:"protocol_version"`
+	InstructionSet  int              `json:"instruction_set"`
+	DeviceMode      string           `json:"device_mode,omitempty"`
+	OSMode          string           `json:"os_mode"`
+	DefaultLayer    int              `json:"default_layer"`
+	Features        []string         `json:"features"`
+	Analog          *AnalogTelemetry `json:"analog,omitempty"`
+}
+
+// AnalogTelemetry describes the active Hall-effect keyboard profile.
+type AnalogTelemetry struct {
+	ProtocolVersion     int                     `json:"protocol_version"`
+	CurrentProfile      int                     `json:"current_profile"`
+	ProfileCount        int                     `json:"profile_count"`
+	ProfileSize         int                     `json:"profile_size"`
+	OKMCSlots           int                     `json:"okmc_slots"`
+	SOCDSlots           int                     `json:"socd_slots"`
+	CurrentProfileState *AnalogProfileTelemetry `json:"current_profile_state,omitempty"`
+}
+
+// AnalogProfileTelemetry is the global configuration for one HE profile.
+type AnalogProfileTelemetry struct {
+	Mode                 string  `json:"mode"`
+	ActuationMM          float64 `json:"actuation_mm"`
+	PressSensitivityMM   float64 `json:"press_sensitivity_mm"`
+	ReleaseSensitivityMM float64 `json:"release_sensitivity_mm"`
+}
+
+// Status describes a supported Keychron device connection.
 type Status struct {
-	Name       string   `json:"name"`
-	Connection string   `json:"connection"`
-	ReceiverID string   `json:"receiver_id"`
-	DeviceID   string   `json:"device_id,omitempty"`
-	Connected  bool     `json:"connected"`
-	Battery    *Battery `json:"battery,omitempty"`
-	Error      string   `json:"error,omitempty"`
+	Name       string             `json:"name"`
+	Connection string             `json:"connection"`
+	ReceiverID string             `json:"receiver_id,omitempty"`
+	DeviceID   string             `json:"device_id,omitempty"`
+	Connected  bool               `json:"connected"`
+	Battery    *Battery           `json:"battery,omitempty"`
+	Keyboard   *KeyboardTelemetry `json:"keyboard,omitempty"`
+	Error      string             `json:"error,omitempty"`
 }
 
 // Scan discovers supported Keychron receivers and queries their current state.
 // The protocol operations are read-only; the only output reports sent are
 // state queries used by Keychron Launcher itself.
-func Scan(includeBattery bool) ([]Status, error) {
+func Scan(includeTelemetry bool) ([]Status, error) {
 	if err := hid.Init(); err != nil {
 		return nil, fmt.Errorf("initialize HIDAPI: %w", err)
 	}
@@ -40,7 +74,7 @@ func Scan(includeBattery bool) ([]Status, error) {
 
 	var devices []*hid.DeviceInfo
 	err := hid.Enumerate(keychronVendorID, hid.ProductIDAny, func(info *hid.DeviceInfo) error {
-		if isMouseConfigInterface(info) || isKeyboardConfigInterface(info) {
+		if isMouseConfigInterface(info) || isKeyboardConfigInterface(info) || isWiredK8ConfigInterface(info) {
 			copy := *info
 			devices = append(devices, &copy)
 		}
@@ -61,9 +95,11 @@ func Scan(includeBattery bool) ([]Status, error) {
 	for _, info := range devices {
 		switch info.ProductID {
 		case mouseReceiverPID:
-			statuses = append(statuses, queryMouse(info, includeBattery))
+			statuses = append(statuses, queryMouse(info, includeTelemetry))
 		case keyboardReceiverPID:
 			statuses = append(statuses, queryKeyboard(info))
+		case k8HEPID:
+			statuses = append(statuses, queryWiredK8(info, includeTelemetry))
 		}
 	}
 	return statuses, nil
@@ -77,6 +113,11 @@ func isMouseConfigInterface(info *hid.DeviceInfo) bool {
 func isKeyboardConfigInterface(info *hid.DeviceInfo) bool {
 	return info.ProductID == keyboardReceiverPID &&
 		(info.InterfaceNbr == keyboardConfigInterface || info.UsagePage == keyboardConfigUsage)
+}
+
+func isWiredK8ConfigInterface(info *hid.DeviceInfo) bool {
+	return info.ProductID == k8HEPID &&
+		(info.InterfaceNbr == wiredKeyboardConfigInterface || info.UsagePage == keyboardConfigUsage)
 }
 
 func queryMouse(info *hid.DeviceInfo, includeBattery bool) Status {
@@ -162,6 +203,33 @@ func queryKeyboard(info *hid.DeviceInfo) Status {
 	return status
 }
 
+func queryWiredK8(info *hid.DeviceInfo, includeTelemetry bool) Status {
+	status := Status{
+		Name:       "Keychron K8 HE",
+		Connection: "USB",
+		DeviceID:   usbID(info.VendorID, info.ProductID),
+		Connected:  true,
+	}
+	if !includeTelemetry {
+		return status
+	}
+
+	device, err := hid.OpenPath(info.Path)
+	if err != nil {
+		status.Error = accessError(err)
+		return status
+	}
+	defer device.Close()
+
+	telemetry, err := queryWiredK8Telemetry(device)
+	if err != nil {
+		status.Error = fmt.Sprintf("query keyboard: %v", err)
+		return status
+	}
+	status.Keyboard = &telemetry
+	return status
+}
+
 func exchange(device *hid.Device, request []byte, responseSize int, matches func([]byte) bool) ([]byte, error) {
 	if _, err := device.Write(request); err != nil {
 		return nil, fmt.Errorf("write HID report: %w", err)
@@ -191,7 +259,7 @@ func exchange(device *hid.Device, request []byte, responseSize int, matches func
 func accessError(err error) string {
 	message := err.Error()
 	if strings.Contains(strings.ToLower(message), "permission denied") {
-		return "permission denied; install udev/70-inputscout.rules and reconnect the receiver"
+		return "permission denied; install udev/70-inputscout.rules and reconnect the device"
 	}
 	return fmt.Sprintf("open HID interface: %v", err)
 }

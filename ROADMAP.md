@@ -37,6 +37,7 @@ Status: **complete**
 - [x] Apply least-privilege `udev` access to configuration interfaces only.
 - [x] Test parsers using captured real-device responses.
 - [x] Validate the implementation on physical hardware and in CI.
+- [x] Read K8 HE wired firmware, mode, feature, and active HE profile telemetry.
 
 ## v0.2 — protocol and diagnostics foundation
 
@@ -122,19 +123,22 @@ read, and reversible from a saved snapshot.
 
 Goal: determine the safest route to K8 HE battery and useful keyboard state.
 
+Status: **in progress; the wired read-only slice landed early**
+
 - Test whether K8 HE exposes the standard BlueZ `Battery1` interface in
   Bluetooth mode.
 - Compare wired, Bluetooth, and 2.4 GHz traffic without changing keyboard
   configuration.
 - Map receiver commands beyond the currently known identity query.
-- Document which Launcher commands require a cable and which can cross the
+- [x] Document the currently implemented commands that require a cable.
+- Document which additional Launcher commands can cross the
   receiver transport.
-- Read firmware version, active connection, and available onboard state where
+- [x] Read firmware version, device mode, OS layer, and available onboard state where
   supported.
 - Evaluate a minimal upstreamable QMK raw-HID battery query.
 - Patch firmware only if standard Bluetooth and receiver approaches fail, and
   keep stock-firmware support as the primary path.
-- Explore read-only Hall-effect settings before any actuation-point writes.
+- [x] Read the active Hall-effect profile and global actuation settings without writes.
 
 Definition of done: either battery telemetry works on stock firmware over at
 least one wireless mode, or the limitation and a safe opt-in firmware path are

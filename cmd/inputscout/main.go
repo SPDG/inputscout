@@ -7,6 +7,7 @@ import (
 	"fmt"
 	"io"
 	"os"
+	"strings"
 
 	"github.com/spdg/inputscout/internal/keychron"
 )
@@ -14,8 +15,8 @@ import (
 const usageText = `Usage: inputscout [status|list] [--json]
 
 Commands:
-  status  Show connected Keychron devices and available battery state (default)
-  list    List connected Keychron devices without querying battery state
+  status  Show connected Keychron devices and available telemetry (default)
+  list    List connected Keychron devices without querying telemetry
 `
 
 func main() {
@@ -45,10 +46,10 @@ func run(args []string, stdout, stderr io.Writer) int {
 		return 2
 	}
 
-	includeBattery := false
+	includeTelemetry := false
 	switch command {
 	case "status":
-		includeBattery = true
+		includeTelemetry = true
 	case "list":
 	case "help", "-h", "--help":
 		fmt.Fprint(stdout, usageText)
@@ -59,13 +60,13 @@ func run(args []string, stdout, stderr io.Writer) int {
 		return 2
 	}
 
-	statuses, err := keychron.Scan(includeBattery)
+	statuses, err := keychron.Scan(includeTelemetry)
 	if err != nil {
 		fmt.Fprintf(stderr, "inputscout: %v\n", err)
 		return 1
 	}
 	if len(statuses) == 0 {
-		fmt.Fprintln(stderr, "inputscout: no supported receiver found")
+		fmt.Fprintln(stderr, "inputscout: no supported device found")
 		return 1
 	}
 
@@ -77,7 +78,7 @@ func run(args []string, stdout, stderr io.Writer) int {
 			return 1
 		}
 	} else {
-		printHuman(stdout, statuses, includeBattery)
+		printHuman(stdout, statuses, includeTelemetry)
 	}
 
 	for _, status := range statuses {
@@ -88,14 +89,16 @@ func run(args []string, stdout, stderr io.Writer) int {
 	return 0
 }
 
-func printHuman(w io.Writer, statuses []keychron.Status, includeBattery bool) {
+func printHuman(w io.Writer, statuses []keychron.Status, includeTelemetry bool) {
 	for i, status := range statuses {
 		if i > 0 {
 			fmt.Fprintln(w)
 		}
 		fmt.Fprintln(w, status.Name)
 		fmt.Fprintf(w, "  Connection: %s\n", status.Connection)
-		fmt.Fprintf(w, "  Receiver:   %s\n", status.ReceiverID)
+		if status.ReceiverID != "" {
+			fmt.Fprintf(w, "  Receiver:   %s\n", status.ReceiverID)
+		}
 		if status.DeviceID != "" {
 			fmt.Fprintf(w, "  Device:     %s\n", status.DeviceID)
 		}
@@ -104,8 +107,29 @@ func printHuman(w io.Writer, statuses []keychron.Status, includeBattery bool) {
 			fmt.Fprintf(w, "  Error:      %s\n", status.Error)
 			continue
 		}
-		if !includeBattery || !status.Connected {
+		if !includeTelemetry || !status.Connected {
 			continue
+		}
+		if status.Keyboard != nil {
+			keyboard := status.Keyboard
+			if keyboard.DeviceMode != "" {
+				fmt.Fprintf(w, "  Device mode: %s\n", keyboard.DeviceMode)
+			}
+			fmt.Fprintf(w, "  Firmware:   %s\n", keyboard.FirmwareVersion)
+			if keyboard.FirmwareBuild != "" {
+				fmt.Fprintf(w, "  Build:      %s\n", keyboard.FirmwareBuild)
+			}
+			fmt.Fprintf(w, "  Protocol:   %d (instruction set %d)\n", keyboard.ProtocolVersion, keyboard.InstructionSet)
+			fmt.Fprintf(w, "  OS mode:    %s (layer %d)\n", keyboard.OSMode, keyboard.DefaultLayer)
+			fmt.Fprintf(w, "  Features:   %s\n", strings.Join(keyboard.Features, ", "))
+			if keyboard.Analog != nil {
+				analog := keyboard.Analog
+				fmt.Fprintf(w, "  HE profile: %d/%d", analog.CurrentProfile+1, analog.ProfileCount)
+				if analog.CurrentProfileState != nil {
+					fmt.Fprintf(w, " (%s, %.1f mm)", analog.CurrentProfileState.Mode, analog.CurrentProfileState.ActuationMM)
+				}
+				fmt.Fprintln(w)
+			}
 		}
 		if status.Battery != nil {
 			fmt.Fprintf(w, "  Battery:    %d%%\n", status.Battery.Percentage)

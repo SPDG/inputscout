@@ -3,3 +3,6 @@ SUBSYSTEM=="hidraw", ATTRS{idVendor}=="3434", ATTRS{idProduct}=="d028", ENV{ID_U
 
 # Keychron Link configuration interface (keyboard receiver)
 SUBSYSTEM=="hidraw", ATTRS{idVendor}=="3434", ATTRS{idProduct}=="d030", ENV{ID_USB_INTERFACE_NUM}=="03", TAG+="uaccess"
+
+# Keychron K8 HE wired configuration interface
+SUBSYSTEM=="hidraw", ATTRS{idVendor}=="3434", ATTRS{idProduct}=="0e80", ENV{ID_USB_INTERFACE_NUM}=="01", TAG+="uaccess"

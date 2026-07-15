@@ -6,13 +6,15 @@ import (
 )
 
 const (
-	keychronVendorID        = 0x3434
-	mouseReceiverPID        = 0xd028
-	keyboardReceiverPID     = 0xd030
-	mouseConfigUsagePage    = 0xffc1
-	keyboardConfigUsage     = 0xff60
-	mouseConfigInterface    = 4
-	keyboardConfigInterface = 3
+	keychronVendorID             = 0x3434
+	mouseReceiverPID             = 0xd028
+	keyboardReceiverPID          = 0xd030
+	k8HEPID                      = 0x0e80
+	mouseConfigUsagePage         = 0xffc1
+	keyboardConfigUsage          = 0xff60
+	mouseConfigInterface         = 4
+	keyboardConfigInterface      = 3
+	wiredKeyboardConfigInterface = 1
 )
 
 type deviceIdentity struct {
