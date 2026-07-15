@@ -31,4 +31,4 @@ jobs:
         run: go vet ./...
 
       - name: Build
-        run: go build ./cmd/inputscout
+        run: make build

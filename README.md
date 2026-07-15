@@ -10,11 +10,10 @@
 devices. It communicates with supported receiver and wired configuration
 interfaces directly through HID reports and does not modify onboard settings.
 
-The project is at an early stage. Its first goal is reliable device discovery
-and battery reporting, followed by a background service and desktop status
-indicator.
+The project is at an early stage. It currently provides device discovery,
+battery and wired keyboard telemetry, plus a native desktop tray indicator.
 
-[Roadmap](ROADMAP.md) · [Brand assets](assets/BRAND.md)
+[Roadmap](ROADMAP.md) · [Desktop integration](docs/desktop-integration.md) · [Brand assets](assets/BRAND.md)
 
 ## Current support
 
@@ -38,7 +37,35 @@ make test
 make build
 ```
 
-The resulting binary is written to `bin/inputscout`.
+The resulting binaries are written to `bin/inputscout` and
+`bin/inputscout-tray`.
+
+## Desktop tray
+
+Install the CLI and tray process for the current user:
+
+```console
+make install-user
+```
+
+This installs and starts `inputscout-tray` as a systemd user service. The tray
+icon follows the lowest available device battery, its tooltip lists all
+supported devices, and clicking it shows the current state as a desktop
+notification. Devices at 20% and 10% trigger low and critical notifications.
+
+The tray refreshes once per minute. It uses the standard StatusNotifierItem
+protocol and does not require root access. See [desktop battery integration](docs/desktop-integration.md)
+for why receiver devices cannot currently be registered with UPower directly.
+The device permission rule from the next section still needs to be installed
+once on a new machine.
+
+Useful service commands:
+
+```console
+systemctl --user status inputscout-tray
+systemctl --user restart inputscout-tray
+journalctl --user -u inputscout-tray
+```
 
 ## Device permissions
 

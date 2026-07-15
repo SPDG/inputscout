@@ -1,0 +1,14 @@
+[Unit]
+Description=InputScout input device battery tray
+Documentation=https://github.com/SPDG/inputscout
+PartOf=graphical-session.target
+After=graphical-session.target
+
+[Service]
+Type=simple
+ExecStart=%h/.local/bin/inputscout-tray
+Restart=on-failure
+RestartSec=5s
+
+[Install]
+WantedBy=graphical-session.target

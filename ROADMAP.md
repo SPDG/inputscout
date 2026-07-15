@@ -149,9 +149,13 @@ fully documented and reproducible.
 Goal: make device state visible without turning InputScout into a permanently
 open configuration application.
 
+Status: **in progress; a directly polling StatusNotifierItem MVP is available**
+
+- [x] Add a native StatusNotifierItem tray process with a battery-aware icon and tooltip.
+- [x] Add low and critical battery notifications with transition-based deduplication.
 - Add a StatusNotifier/AppIndicator tray client backed by D-Bus.
 - Show battery, charging, connection, profile, and stale-state indicators.
-- Send configurable low-battery, charging-complete, disconnect, and critical
+- Send configurable charging-complete, disconnect, and critical
   error notifications.
 - Add quick actions for profile and DPI changes after safe writes land.
 - Provide monochrome symbolic icons and full-color application icons.
@@ -160,6 +164,8 @@ open configuration application.
   clients, not separate hardware backends.
 - Investigate exporting supported devices to UPower so existing desktop battery
   surfaces can consume the data.
+- [x] Document why UPower and BlueZ cannot accept proprietary 2.4 GHz batteries
+  from an unprivileged user process today.
 
 Definition of done: the daemon has no GUI dependency, the cross-desktop tray is
 fully usable, and desktop-specific integrations can be installed independently.
