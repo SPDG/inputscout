@@ -15,7 +15,8 @@ install-user: build
 	install -Dm0755 bin/inputscout-tray $(HOME)/.local/bin/inputscout-tray
 	install -Dm0644 systemd/inputscout-tray.service $(HOME)/.config/systemd/user/inputscout-tray.service
 	systemctl --user daemon-reload
-	systemctl --user enable --now inputscout-tray.service
+	systemctl --user enable inputscout-tray.service
+	systemctl --user restart inputscout-tray.service
 
 uninstall-user:
 	-systemctl --user disable --now inputscout-tray.service

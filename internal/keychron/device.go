@@ -26,6 +26,7 @@ type KeyboardTelemetry struct {
 	ProtocolVersion int              `json:"protocol_version"`
 	InstructionSet  int              `json:"instruction_set"`
 	DeviceMode      string           `json:"device_mode,omitempty"`
+	ExternalPower   bool             `json:"external_power_connected"`
 	OSMode          string           `json:"os_mode"`
 	DefaultLayer    int              `json:"default_layer"`
 	Features        []string         `json:"features"`

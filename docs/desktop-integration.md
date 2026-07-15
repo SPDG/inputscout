@@ -34,6 +34,13 @@ Power and Battery applet becomes a requirement:
 3. Propose a general user-space battery provider API upstream in UPower, with
    authentication, lifecycle, and conflict handling designed by UPower.
 
+The first two paths work because KDE's battery model consumes `Solid::Battery`
+devices, and Solid's Linux backend obtains those from UPower. Logitech HID++
+devices are a useful example: when supported by the kernel driver, their
+battery is published through Linux's `power_supply` class and then discovered
+by UPower. Solaar's own indicator is instead a separate tray item, just like
+the initial InputScout integration.
+
 Until one of those exists, StatusNotifierItem is the supported unprivileged
 desktop path and works across KDE Plasma and other compatible tray hosts.
 
@@ -42,4 +49,6 @@ desktop path and works across KDE Plasma and other compatible tray hosts.
 - [UPower D-Bus API](https://upower.freedesktop.org/docs/UPower/)
 - [UPower device API](https://upower.freedesktop.org/docs/Device.html)
 - [BlueZ Battery Provider API](https://kernel.googlesource.com/pub/scm/bluetooth/bluez.git/+/refs/heads/master/doc/org.bluez.BatteryProvider.rst)
+- [Linux power supply class](https://docs.kernel.org/power/power_supply_class.html)
+- [Linux Logitech HID++ driver](https://github.com/torvalds/linux/blob/master/drivers/hid/hid-logitech-hidpp.c)
 - [StatusNotifierItem specification](https://specifications.freedesktop.org/status-notifier-item/latest/status-notifier-item.html)

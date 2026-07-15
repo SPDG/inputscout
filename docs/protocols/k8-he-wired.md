@@ -29,11 +29,17 @@ while `device_mode: 2.4 GHz` describes the selector state returned by firmware.
 | `A9 01` | Analog protocol version | Version |
 | `A9 10` | Analog profile information | Current/count/size plus OKMC and SOCD slot counts |
 | `A9 12` | Raw profile range | Only the four-byte global config at offset zero |
-| `AB 05` | Factory transport read | Physical connection-selector mode with checksum validation |
+| `AB 05` | Factory transport read | Physical connection-selector mode and USB power sense with checksum validation |
 
 The `A9 12` request deliberately asks for only four bytes. That is enough to
 decode the active profile's regular/rapid-trigger mode, actuation point, and
 press/release sensitivity without collecting per-key mappings or its name.
+
+For K8 HE, the third `AB 05` payload byte is the active-low
+`USB_POWER_SENSE_PIN`. It confirms that external USB power is present, but it
+cannot distinguish a battery that is actively charging from one that is
+already full. InputScout therefore labels this field `USB power` rather than
+`Charging`.
 
 ## Battery result
 

@@ -84,12 +84,12 @@ func TestParseFactoryTransport(t *testing.T) {
 	report := make([]byte, 32)
 	report[0], report[1], report[2] = 0xab, 0x05, 0x04
 	binary.LittleEndian.PutUint16(report[30:32], 0x0009)
-	mode, err := parseFactoryTransport(report)
+	status, err := parseFactoryTransport(report)
 	if err != nil {
 		t.Fatalf("parseFactoryTransport() error = %v", err)
 	}
-	if mode != "2.4 GHz" {
-		t.Fatalf("parseFactoryTransport() = %q", mode)
+	if status.Mode != "2.4 GHz" || !status.ExternalPower {
+		t.Fatalf("parseFactoryTransport() = %#v", status)
 	}
 }
 
@@ -98,6 +98,19 @@ func TestParseFactoryTransportRejectsInvalidChecksum(t *testing.T) {
 	report[0], report[1], report[2] = 0xab, 0x05, 0x04
 	if _, err := parseFactoryTransport(report); err == nil {
 		t.Fatal("parseFactoryTransport() unexpectedly accepted an invalid checksum")
+	}
+}
+
+func TestParseFactoryTransportWithoutExternalPower(t *testing.T) {
+	report := make([]byte, 32)
+	report[0], report[1], report[2], report[3] = 0xab, 0x05, 0x02, 0x01
+	binary.LittleEndian.PutUint16(report[30:32], 0x0008)
+	status, err := parseFactoryTransport(report)
+	if err != nil {
+		t.Fatalf("parseFactoryTransport() error = %v", err)
+	}
+	if status.Mode != "Bluetooth" || status.ExternalPower {
+		t.Fatalf("parseFactoryTransport() = %#v", status)
 	}
 }
 

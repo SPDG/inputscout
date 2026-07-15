@@ -115,6 +115,7 @@ func printHuman(w io.Writer, statuses []keychron.Status, includeTelemetry bool) 
 			if keyboard.DeviceMode != "" {
 				fmt.Fprintf(w, "  Device mode: %s\n", keyboard.DeviceMode)
 			}
+			fmt.Fprintf(w, "  USB power:  %s\n", connectedDisconnected(keyboard.ExternalPower))
 			fmt.Fprintf(w, "  Firmware:   %s\n", keyboard.FirmwareVersion)
 			if keyboard.FirmwareBuild != "" {
 				fmt.Fprintf(w, "  Build:      %s\n", keyboard.FirmwareBuild)
@@ -145,4 +146,11 @@ func yesNo(value bool) string {
 		return "yes"
 	}
 	return "no"
+}
+
+func connectedDisconnected(value bool) string {
+	if value {
+		return "connected"
+	}
+	return "disconnected"
 }

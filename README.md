@@ -96,6 +96,7 @@ Keychron K8 HE
   Device:     3434:0e80
   Connected:  yes
   Device mode: 2.4 GHz
+  USB power:  connected
   Firmware:   v1.1.1
   Build:      2025-06-17 10:42:45
   Protocol:   2 (instruction set 2)

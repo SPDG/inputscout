@@ -9,7 +9,7 @@ import (
 
 func TestBuildState(t *testing.T) {
 	statuses := []keychron.Status{
-		{Name: "Keychron K8 HE", Connection: "USB", DeviceID: "3434:0e80", Connected: true},
+		{Name: "Keychron K8 HE", Connection: "USB", DeviceID: "3434:0e80", Connected: true, Keyboard: &keychron.KeyboardTelemetry{ExternalPower: true}},
 		{
 			Name:       "Keychron M5 8K",
 			Connection: "2.4 GHz",
@@ -26,7 +26,7 @@ func TestBuildState(t *testing.T) {
 	if state.IconName != "battery-020" {
 		t.Fatalf("BuildState().IconName = %q", state.IconName)
 	}
-	wantDescription := "Keychron M5 8K: 16%\nKeychron K8 HE: battery unavailable"
+	wantDescription := "Keychron M5 8K: 16%\nKeychron K8 HE: battery unavailable, USB power connected"
 	if state.Description != wantDescription {
 		t.Fatalf("BuildState().Description = %q, want %q", state.Description, wantDescription)
 	}

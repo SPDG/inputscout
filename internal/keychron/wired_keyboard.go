@@ -40,6 +40,11 @@ type analogProfileInfo struct {
 	SOCDSlots      int
 }
 
+type factoryTransportStatus struct {
+	Mode          string
+	ExternalPower bool
+}
+
 func queryWiredK8Telemetry(device *hid.Device) (KeyboardTelemetry, error) {
 	protocolReport, err := wiredExchange(device, commandProtocolVersion)
 	if err != nil {
@@ -99,10 +104,12 @@ func queryWiredK8Telemetry(device *hid.Device) (KeyboardTelemetry, error) {
 	if err != nil {
 		return KeyboardTelemetry{}, fmt.Errorf("device mode: %w", err)
 	}
-	telemetry.DeviceMode, err = parseFactoryTransport(transportReport)
+	transport, err := parseFactoryTransport(transportReport)
 	if err != nil {
 		return KeyboardTelemetry{}, err
 	}
+	telemetry.DeviceMode = transport.Mode
+	telemetry.ExternalPower = transport.ExternalPower
 
 	return telemetry, nil
 }
@@ -290,9 +297,9 @@ func parseAnalogGlobalProfile(report []byte) (AnalogProfileTelemetry, error) {
 	}, nil
 }
 
-func parseFactoryTransport(report []byte) (string, error) {
+func parseFactoryTransport(report []byte) (factoryTransportStatus, error) {
 	if len(report) < 32 || report[0] != commandFactory || report[1] != factoryGetTransport {
-		return "", invalidWiredResponse("device mode", report, 32)
+		return factoryTransportStatus{}, invalidWiredResponse("device mode", report, 32)
 	}
 	want := binary.LittleEndian.Uint16(report[30:32])
 	var got uint16
@@ -300,18 +307,24 @@ func parseFactoryTransport(report []byte) (string, error) {
 		got += uint16(value)
 	}
 	if got != want {
-		return "", fmt.Errorf("invalid device mode checksum: got 0x%04x, want 0x%04x", want, got)
+		return factoryTransportStatus{}, fmt.Errorf("invalid device mode checksum: got 0x%04x, want 0x%04x", want, got)
+	}
+	status := factoryTransportStatus{
+		// K8 HE defines USB_POWER_CONNECTED_LEVEL as active-low. This proves
+		// external power presence, not that the cell is still charging.
+		ExternalPower: report[3] == 0,
 	}
 	switch report[2] {
 	case 1:
-		return "USB", nil
+		status.Mode = "USB"
 	case 2:
-		return "Bluetooth", nil
+		status.Mode = "Bluetooth"
 	case 4:
-		return "2.4 GHz", nil
+		status.Mode = "2.4 GHz"
 	default:
-		return fmt.Sprintf("unknown (%d)", report[2]), nil
+		status.Mode = fmt.Sprintf("unknown (%d)", report[2])
 	}
+	return status, nil
 }
 
 func invalidWiredResponse(name string, report []byte, minimum int) error {

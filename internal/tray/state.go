@@ -32,7 +32,7 @@ func BuildState(statuses []keychron.Status, scanErr error) State {
 	}
 
 	batteryByName := make(map[string]BatteryDevice)
-	unavailable := make(map[string]struct{})
+	unavailable := make(map[string]bool)
 	var errors []string
 	for _, status := range statuses {
 		if status.Error != "" {
@@ -42,7 +42,7 @@ func BuildState(statuses []keychron.Status, scanErr error) State {
 			continue
 		}
 		if status.Battery == nil {
-			unavailable[status.Name] = struct{}{}
+			unavailable[status.Name] = unavailable[status.Name] || status.Keyboard != nil && status.Keyboard.ExternalPower
 			continue
 		}
 		id := status.DeviceID
@@ -87,7 +87,11 @@ func BuildState(statuses []keychron.Status, scanErr error) State {
 	}
 	sort.Strings(unavailableNames)
 	for _, name := range unavailableNames {
-		lines = append(lines, name+": battery unavailable")
+		line := name + ": battery unavailable"
+		if unavailable[name] {
+			line += ", USB power connected"
+		}
+		lines = append(lines, line)
 	}
 	lines = append(lines, errors...)
 
